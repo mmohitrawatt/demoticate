@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE_REALITY_ALIEN_FINAL_V13</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Creepster&family=Orbitron:wght@500;900&family=Share+Tech+Mono&family=Special+Elite&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            color: #0f0;
+            font-family: 'Share Tech Mono', monospace;
+            /* TECH FONT */
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            user-select: none;
+            cursor: none;
+        }
+
+        /* 1. CRT & GLITCH LAYERS (The "Feel") */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(to bottom,
+                    rgba(0, 0, 0, 0),
+                    rgba(0, 0, 0, 0) 50%,
+                    rgba(0, 20, 0, 0.2) 50%,
+                    rgba(0, 20, 0, 0.2) 100%);
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 95;
+            animation: scanlineMove 20s linear infinite;
+        }
+
+        .crt-flicker {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 255, 0, 0.02);
+            pointer-events: none;
+            z-index: 96;
+            animation: flicker 0.15s infinite;
+        }
+
+        .rgb-split {
+            text-shadow: 2px 0 #f00, -2px 0 #00f;
+            animation: rgbShift 2s alternate infinite;
+        }
+
+        .flash-layer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 200;
+        }
+
+        /* 2. MAIN CONTENT */
+        #container {
+            z-index: 20;
+            max-width: 900px;
+            padding: 20px;
+            position: relative;
+            transform: translateY(-50px);
+        }
+
+        .timer-display {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            font-size: 30px;
+            color: #0f0;
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: 0 0 10px #0f0;
+            z-index: 100;
+            border: 1px solid #0f0;
+            padding: 5px 15px;
+            background: rgba(0, 20, 0, 0.8);
+        }
+
+        /* TEXT STYLES */
+        .text-word {
+            display: inline-block;
+            font-size: 28px;
+            margin: 0 8px;
+            color: #cfc;
+            text-shadow: 0 0 8px #0f0;
+        }
+
+        .highlight {
+            color: #f00;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 45px;
+            text-shadow: 2px 2px 0px #0f0, -2px -2px 0px #00f;
+            /* Glitch Shadow */
+            display: block;
+            margin: 30px 0;
+            line-height: 1.2;
+            letter-spacing: 3px;
+        }
+
+        /* MOBILE OPT */
+        @media (max-width: 600px) {
+            .text-word {
+                font-size: 20px;
+                margin: 0 3px;
+            }
+
+            .highlight {
+                font-size: 32px;
+                margin: 20px 0;
+            }
+
+            .timer-display {
+                font-size: 20px;
+            }
+        }
+
+        /* 3. ALIEN HUD & CAMERA */
+        #cam-frame {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 200px;
+            z-index: 50;
+            opacity: 0;
+            transition: opacity 1s;
+        }
+
+        #webcam {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 2px solid #0f0;
+            box-shadow: 0 0 20px #0f0, inset 0 0 20px #0f0;
+            filter: grayscale(100%) contrast(120%) brightness(0.8) sepia(1) hue-rotate(90deg) url(#melt-filter);
+            transform: scaleX(-1);
+        }
+
+        /* HUD OVERLAY (SVG) */
+        .hud-overlay {
+            position: absolute;
+            top: -10%;
+            left: -10%;
+            width: 120%;
+            height: 120%;
+            pointer-events: none;
+            animation: rotateHUD 10s linear infinite;
+        }
+
+        /* 4. ANIMATIONS */
+        @keyframes scanlineMove {
+            0% {
+                background-position: 0 0;
+            }
+
+            100% {
+                background-position: 0 100%;
+            }
+        }
+
+        @keyframes flicker {
+            0% {
+                opacity: 0.9;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0.95;
+            }
+        }
+
+        @keyframes rgbShift {
+            0% {
+                text-shadow: 2px 0 #f00, -2px 0 #00f;
+            }
+
+            20% {
+                text-shadow: 3px 1px #f00, -3px -1px #00f;
+            }
+
+            40% {
+                text-shadow: -2px 2px #f00, 2px -2px #00f;
+            }
+
+            100% {
+                text-shadow: 1px 0 #f00, -1px 0 #00f;
+            }
+        }
+
+        @keyframes rotateHUD {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes shakeText {
+            0% {
+                transform: translate(1px, 1px);
+            }
+
+            20% {
+                transform: translate(-2px, 0px);
+            }
+
+            40% {
+                transform: translate(2px, -1px);
+            }
+
+            100% {
+                transform: translate(0, 0);
+            }
+        }
+
+        .shaking {
+            animation: shakeText 0.1s infinite;
+        }
+
+        .violent-shake {
+            animation: shakeText 0.05s infinite;
+            filter: blur(1px);
+        }
+
+
+        #start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .challenge-btn {
+            background: #000;
+            border: 1px solid #0f0;
+            color: #0f0;
+            padding: 20px 40px;
+            font-size: 22px;
+            cursor: pointer;
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            box-shadow: 0 0 10px #0f0;
+            letter-spacing: 2px;
+        }
+
+        .challenge-btn:hover {
+            background: #0f0;
+            color: #000;
+            box-shadow: 0 0 30px #0f0;
+        }
+
+        #snapshot-canvas {
+            display: none;
+        }
+
+        .stamp {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- SVG FX -->
+    <svg style="display: none;">
+        <defs>
+            <filter id="melt-filter">
+                <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="2" result="warp" />
+                <feDisplacementMap xChannelSelector="R" yChannelSelector="G" scale="0" in="SourceGraphic" in2="warp" />
+            </filter>
+        </defs>
+    </svg>
+
+    <!-- LAYERS -->
+    <div class="scanlines"></div>
+    <div class="crt-flicker"></div>
+    <div class="flash-layer" id="flash"></div>
+
+    <div class="timer-display" id="timer">60.00</div>
+
+    <div id="cam-frame">
+        <video id="webcam" autoplay playsinline muted></video>
+        <!-- ROTATING HUD RING -->
+        <svg class="hud-overlay" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="48" stroke="#0f0" stroke-width="0.5" fill="none" stroke-dasharray="10 5" />
+            <circle cx="50" cy="50" r="40" stroke="#0f0" stroke-width="0.2" fill="none" />
+            <path d="M50,5 L50,15 M50,95 L50,85 M5,50 L15,50 M95,50 L85,50" stroke="#0f0" stroke-width="1" />
+        </svg>
+    </div>
+
+    <!-- Hidden Snap elements -->
+    <canvas id="snapshot-canvas"></canvas>
+
+    <div id="start-screen">
+        <h1 style="color:#0f0; font-family:'Orbitron'; font-size:40px; text-shadow:0 0 20px #0f0; margin-bottom:10px;">
+            INCOMING TRANSMISSION</h1>
+        <p style="color:#0f0; font-family:'Share Tech Mono'; margin-bottom:30px;">SIGNAL STRENGTH: 100%</p>
+        <button class="challenge-btn" id="start-btn">CONNECT</button>
+    </div>
+
+    <div id="container">
+        <div id="text-area"></div>
+    </div>
+
+    <script>
+        const startBtn = document.getElementById('start-btn');
+        const startScreen = document.getElementById('start-screen');
+        const textArea = document.getElementById('text-area');
+        const timerDisplay = document.getElementById('timer');
+        const webcam = document.getElementById('webcam');
+        const camFrame = document.getElementById('cam-frame');
+        const meltFilter = document.querySelector("#melt-filter feDisplacementMap");
+        const canvas = document.getElementById('snapshot-canvas');
+        const flash = document.getElementById('flash');
+
+        let audioCtx;
+        const alienChars = "░▒▓█<>/X¥∆∑Ω";
+
+        startBtn.addEventListener('click', () => {
+            navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+                .then(stream => {
+                    webcam.srcObject = stream;
+                    camFrame.style.opacity = 1;
+                    startExperience();
+                })
+                .catch(err => {
+                    alert("SIGNAL LOST. CAMERA REQUIRED.");
+                    startExperience();
+                });
+        });
+
+        function startExperience() {
+            if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+            initAlienAudio();
+            startScreen.style.opacity = 0;
+            setTimeout(() => {
+                startScreen.style.display = 'none';
+                startCountdown();
+            }, 1000);
+        }
+
+        // === SNAPSHOT & AUTO-SAVE ===
+        function takeSnapshot() {
+            const ctx = canvas.getContext('2d');
+
+            // High Res Output
+            canvas.width = 480;
+            canvas.height = 640;
+
+            // 1. Draw Video (Mirrored)
+            ctx.translate(canvas.width, 0); ctx.scale(-1, 1);
+            ctx.filter = 'grayscale(100%) contrast(150%) hue-rotate(90deg)'; // Alien Green Matrix Tint
+            ctx.drawImage(webcam, 0, 0, canvas.width, canvas.height);
+
+            // Reset Transform for Text
+            ctx.setTransform(1, 0, 0, 1, 0, 0);
+            ctx.filter = 'none';
+
+            // 2. Scanline Overlay on Photo
+            ctx.fillStyle = "rgba(0, 50, 0, 0.3)";
+            for (let i = 0; i < canvas.height; i += 4) {
+                ctx.fillRect(0, i, canvas.width, 2);
+            }
+
+            // 3. Draw Red Stamp (Baked into image)
+            ctx.save();
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.rotate(-15 * Math.PI / 180); // Tilt
+
+            // Stamp Box
+            ctx.strokeStyle = '#f00';
+            ctx.lineWidth = 15;
+            ctx.strokeRect(-200, -60, 400, 120);
+
+            // Stamp Text
+            ctx.fillStyle = '#f00';
+            ctx.font = 'bold 50px "Special Elite", monospace';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('VERIFIED LOSER', 0, 0);
+            ctx.restore();
+
+            // 4. Flash Effect
+            flash.style.opacity = 0.8;
+            setTimeout(() => flash.style.opacity = 0, 200);
+
+            // 5. AUTO DOWNLOAD
+            setTimeout(() => {
+                try {
+                    const dataURL = canvas.toDataURL('image/png');
+                    const link = document.createElement('a');
+                    link.href = dataURL;
+                    link.download = 'VERIFIED_LOSER_STATUS.png';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                } catch (e) { console.error("Download failed", e); }
+            }, 500);
+        }
+
+
+        // === 3D ALIEN AUDIO (Binaural Panner) ===
+        function initAlienAudio() {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+            // 1. DRONE
+            const osc = audioCtx.createOscillator();
+            osc.type = 'sawtooth'; osc.frequency.value = 55;
+            const panner = audioCtx.createStereoPanner();
+            panner.pan.value = 0;
+            const lfo = audioCtx.createOscillator();
+            lfo.frequency.value = 0.2;
+            const lfoGain = audioCtx.createGain();
+            lfoGain.gain.value = 1;
+            lfo.connect(lfoGain); lfoGain.connect(panner.pan);
+            osc.connect(panner); panner.connect(audioCtx.destination);
+            osc.start(); lfo.start();
+
+            // 2. STATIC
+            const noise = audioCtx.createBufferSource();
+            const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 2, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < buffer.length; i++) data[i] = Math.random() * 0.05;
+            noise.buffer = buffer; noise.loop = true;
+            noise.connect(audioCtx.destination); noise.start();
+
+            startScanners();
+        }
+
+        function startScanners() {
+            setInterval(() => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                const pan = audioCtx.createStereoPanner();
+                osc.type = 'sine'; osc.frequency.value = 800 + Math.random() * 1000;
+                pan.pan.value = (Math.random() * 2) - 1;
+                gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+                osc.connect(pan); pan.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.15);
+            }, 800 + Math.random() * 1000);
+        }
+
+        function showDecodedText(element, text, speed = 40) {
+            let iterations = 0;
+            const interval = setInterval(() => {
+                element.innerText = text
+                    .split("")
+                    .map((letter, index) => {
+                        if (index < iterations) return letter;
+                        return alienChars[Math.floor(Math.random() * alienChars.length)];
+                    })
+                    .join("");
+                if (iterations >= text.length) clearInterval(interval);
+                iterations += 1 / 2;
+            }, speed);
+        }
+
+        const script = [
+            { t: "Sirf 60 seconds.", d: 4500 },
+            { t: "Neeche dekh.", d: 4000 },
+            { t: "Wo shakal dikh rahi hai?", d: 4500 },
+            { big: "YAHI FAILURE HAI", d: 5500, shake: true },
+            { t: "Sheeshe mein dekh.", d: 4000 },
+            { t: "Kya dikhta hai?", d: 4000 },
+            { big: "EK LOSER?", d: 4500, shake: true },
+            { t: "Tere maa-baap ro rahe hain.", d: 5000 },
+            { t: "Tere kaaran.", d: 4000 },
+            { t: "Unhone socha tha tu kuch banega.", d: 5000 },
+            { t: "Par tu bas TIME WASTE kar raha hai.", d: 5500 },
+            { big: "TU BOJH HAI", d: 4500, shake: true },
+            { big: "DHARTI PAR BOJH", d: 5500, shake: true },
+            { t: "Padhayi? Zero.", d: 4000 },
+            { t: "Career? Khatam.", d: 4000 },
+            { t: "Future? Andhera.", d: 4500 },
+            { big: "TU FAILURE PAIDA HUA THA", d: 5500, shake: true },
+            { big: "AUR FAILURE HI MAREGA", d: 6500, shake: true },
+            { t: "Sheeshe mein dekh.", d: 4000 },
+            { t: "Ye shakal yaad rakhna.", d: 4500 },
+            { big: "SMILE FOR ME", d: 2500, snapshot: true },
+            { big: "ZERO", d: 4500, shake: true },
+            { t: "Ab bhi time hai.", d: 4500 },
+            { t: "Break the Curse.", d: 4500 },
+        ];
+
+        async function startCountdown() {
+            let timeLeft = 60;
+            const timerInt = setInterval(() => {
+                timeLeft--;
+                timerDisplay.innerText = timeLeft.toFixed(2);
+                const progress = (60 - timeLeft) / 60;
+                meltFilter.setAttribute("scale", progress * 80);
+                if (progress > 0.5) {
+                    timerDisplay.style.color = '#f00';
+                    timerDisplay.style.textShadow = '0 0 10px #f00';
+                    camFrame.style.borderColor = '#f00';
+                    camFrame.style.boxShadow = '0 0 20px #f00';
+                }
+                if (timeLeft <= 0) {
+                    clearInterval(timerInt);
+                    timerDisplay.innerText = "00.00";
+                }
+            }, 1000);
+
+            for (let item of script) {
+                textArea.innerHTML = "";
+
+                if (item.big) {
+                    const div = document.createElement("div");
+                    div.className = `highlight ${item.shake ? 'violent-shake' : ''}`;
+                    textArea.appendChild(div);
+                    showDecodedText(div, item.big, 30);
+
+                    if (item.snapshot) takeSnapshot();
+
+                    if (audioCtx) {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.frequency.value = 100;
+                        o.frequency.linearRampToValueAtTime(800, audioCtx.currentTime + 0.2);
+                        g.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                        g.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.2);
+                        o.connect(g); g.connect(audioCtx.destination);
+                        o.start();
+                    }
+
+                } else {
+                    let words = item.t.split(" ");
+                    for (let w of words) {
+                        const span = document.createElement("span");
+                        span.className = "text-word";
+                        textArea.appendChild(span);
+                        showDecodedText(span, w, 40);
+                        await wait(450);
+                    }
+                }
+
+                await wait(item.d);
+                Array.from(textArea.children).forEach(c => c.style.opacity = 0);
+                await wait(600);
+            }
+
+            textArea.innerHTML = `
+                <div class="highlight">SAVE SOMEONE ELSE.</div>
+                <button class="challenge-btn" style="margin-top:20px; border-color:#f00; color:#f00;" onclick="alert('Link Copied.')">BREAK CHAIN</button>
+            `;
+        }
+        function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+    </script>
+</body>
+
+</html>
