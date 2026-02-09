@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <rect width="32" height="32" fill="black"/>
+  <path d="M8 8 L24 24 M24 8 L8 24" stroke="#f00" stroke-width="2" stroke-linecap="square">
+    <animate attributeName="opacity" values="1;0.3;1;0.8;1" dur="0.2s" repeatCount="indefinite" />
+  </path>
+  <path d="M10 8 L26 24" stroke="#0f0" stroke-width="1" opacity="0.5">
+    <animate attributeName="d" values="M10 8 L26 24;M9 9 L25 25;M10 8 L26 24" dur="0.1s" repeatCount="indefinite" />
+  </path>
+  <path d="M6 8 L22 24" stroke="#00f" stroke-width="1" opacity="0.5">
+    <animate attributeName="d" values="M6 8 L22 24;M7 7 L23 13;M6 8 L22 24" dur="0.15s" repeatCount="indefinite" />
+  </path>
+</svg>
