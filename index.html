@@ -415,6 +415,18 @@
 
         <div class="gallery-grid" id="gallery-grid"></div>
 
+        <div id="share-container"
+            style="display: none; margin: 20px 0; width: 100%; max-width: 450px; text-align: center;">
+            <button class="challenge-btn" onclick="shareAllPhotos()"
+                style="background: #f00; border-color: #f00; width: 100%; font-size: 20px; box-shadow: 0 0 40px rgba(255,0,0,0.5); animation: pulse 1s infinite; cursor: pointer;">
+                SAVE 6 SINS TO PHOTOS
+            </button>
+            <p
+                style="color: #fff; font-size: 14px; margin-top: 10px; font-family: 'Share Tech Mono'; opacity: 0.8; line-height: 1.4;">
+                (iPhone Users: Tap button, then select "Save 6 Images")
+            </p>
+        </div>
+
         <!-- RETRY DISABLED: NO SECOND CHANCES IN REALITY -->
 
         <div
@@ -452,6 +464,8 @@
         let heartbeatTempo = 60; // Start with 60 BPM
         const alienChars = "░▒▓█<>/X¥∆∑Ω";
         const capturedPhotos = [];
+        const capturedBlobs = [];
+        const shareContainer = document.getElementById('share-container');
 
         // AGGRESSIVE LOCKDOWN
         window.addEventListener('blur', () => triggerLockdown());
@@ -654,6 +668,13 @@
             flash.style.opacity = 0.8; setTimeout(() => flash.style.opacity = 0, 200);
             const dataUrl = canvas.toDataURL('image/png');
             capturedPhotos.push(dataUrl);
+
+            // Store as File/Blob for Sharing
+            canvas.toBlob(blob => {
+                const file = new File([blob], `SIN_${type.toUpperCase()}_${Date.now()}.png`, { type: 'image/png' });
+                capturedBlobs.push(file);
+            }, 'image/png');
+
             const link = document.createElement('a'); link.href = dataUrl;
             link.download = `TRUTH_CHALLENGE_${type.toUpperCase()}.png`;
             document.body.appendChild(link); link.click(); document.body.removeChild(link);
@@ -763,6 +784,30 @@
                 img.src = p;
                 galleryGrid.appendChild(img);
             });
+
+            // Show share button if we have images
+            if (capturedPhotos.length > 0) {
+                shareContainer.style.display = 'block';
+            }
+        }
+
+        async function shareAllPhotos() {
+            if (navigator.share && capturedBlobs.length > 0) {
+                try {
+                    await navigator.share({
+                        files: capturedBlobs,
+                        title: 'MORAXE: 6 SINS',
+                        text: 'Duniya ko apna asli chehra dikhao. @moraxe.in'
+                    });
+                } catch (err) {
+                    console.error("Share failed:", err);
+                    alert("Sharing failed. Please save images manually by long-pressing them.");
+                }
+            } else if (!navigator.share) {
+                alert("Please save images manually by long-pressing them (Your browser doesn't support easy share).");
+            } else {
+                alert("No images captured yet.");
+            }
         }
 
         function showDecodedText(el, text, speed) {
