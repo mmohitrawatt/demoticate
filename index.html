@@ -496,7 +496,15 @@
         document.body.addEventListener('touchstart', forceFullScreen);
         document.body.addEventListener('click', forceFullScreen);
 
-        function forceFullScreen() { if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => { }); }
+        function forceFullScreen() {
+            try {
+                const docEl = document.documentElement;
+                if (docEl.requestFullscreen) docEl.requestFullscreen().catch(() => { });
+                else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen().catch(() => { });
+                else if (docEl.mozRequestFullScreen) docEl.mozRequestFullScreen().catch(() => { });
+                else if (docEl.msRequestFullscreen) docEl.msRequestFullscreen().catch(() => { });
+            } catch (e) { console.warn("Fullscreen failed", e); }
+        }
         function triggerLockdown() {
             if (startScreen.style.display === 'none' && endScreen.style.display === 'none') {
                 lockdownOverlay.style.display = 'flex';
@@ -510,19 +518,26 @@
             // Unlock Voice Narration
             speakHorror(" ");
 
-            // ROBUST MOBILE CAMERA REQUEST
-            const constraints = {
-                video: { facingMode: 'user' },
-                audio: false
-            };
+            // CHECK FOR SECURE CONTEXT (HTTPS)
+            if (!window.isSecureContext && location.hostname !== "localhost" && location.hostname !== "127.0.0.1") {
+                alert("CRITICAL: Camera required. Browser blocks camera on HTTP.\n\nPlease use HTTPS or test on localhost.");
+            }
 
-            // Start exp immediately to avoid Safari stalls, camera loads in bg
+            // Start experience immediately to be responsive on mobile
             startExperience();
 
+            // Camera request in background - DEFENSIVE CHECK
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                console.error("Camera API missing");
+                alert("ERROR: Browser does not support camera or access is blocked (Secure context required).");
+                return;
+            }
+
+            const constraints = { video: { facingMode: 'user' }, audio: false };
             navigator.mediaDevices.getUserMedia(constraints)
                 .then(stream => {
                     webcam.srcObject = stream;
-                    webcam.play().catch(e => console.error("Webcam play failed", e));
+                    webcam.play().catch(e => console.error(e));
                     camFrame.style.opacity = 1;
                 })
                 .catch(err => {
