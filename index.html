@@ -473,13 +473,41 @@
             // Unlock Voice Narration (Big Boss Mode)
             speakHorror(" ");
 
-            navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+            // ROBUST MOBILE CAMERA REQUEST
+            const constraints = {
+                video: {
+                    facingMode: 'user',
+                    width: { ideal: 720 },
+                    height: { ideal: 1280 }
+                },
+                audio: false
+            };
+
+            navigator.mediaDevices.getUserMedia(constraints)
                 .then(stream => {
                     webcam.srcObject = stream;
-                    camFrame.style.opacity = 1;
-                    startExperience();
+                    webcam.onloadedmetadata = () => {
+                        webcam.play().catch(e => console.error("Auto-play failed:", e));
+                        camFrame.style.opacity = 1;
+                        startExperience();
+                    };
                 })
-                .catch(() => { alert("CHALLENGE REQUIRES VISUAL FEED."); startExperience(); });
+                .catch(err => {
+                    console.error("Camera Error:", err);
+                    let errMsg = "CHALLENGE REQUIRES VISUAL FEED.";
+                    if (err.name === 'NotAllowedError') errMsg = "CAMERA PERMISSION DENIED. RESET PERMISSIONS TO PROCEED.";
+                    if (err.name === 'NotFoundError') errMsg = "NO CAMERA DETECTED.";
+
+                    // Detect if in Instagram/Facebook/WhatsApp WebView
+                    const ua = navigator.userAgent || navigator.vendor || window.opera;
+                    if ((ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1) || (ua.indexOf("Instagram") > -1) || (ua.indexOf("WhatsApp") > -1)) {
+                        errMsg += "\n\nTIP: Ise Chrome ya Safari me open karein (In-app browsers block camera).";
+                    }
+
+                    alert(errMsg);
+                    // Pro-active fallback: attempt start anyway for testing, but mostly we want permission
+                    startExperience();
+                });
         });
 
         function startExperience() {
