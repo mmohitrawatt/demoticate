@@ -10,55 +10,267 @@
         href="https://fonts.googleapis.com/css2?family=Creepster&family=Orbitron:wght@500;900&family=Share+Tech+Mono&family=Special+Elite&display=swap"
         rel="stylesheet">
     <style>
+        :root {
+            --horror-red: #ff0000;
+            --cyber-green: #00ff00;
+            --dark-glass: rgba(0, 0, 0, 0.85);
+            --neon-glow: 0 0 15px var(--horror-red);
+        }
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            cursor: crosshair;
         }
 
         body {
-            background: #000;
-            color: #0f0;
+            background-color: #000;
+            color: var(--cyber-green);
             font-family: 'Share Tech Mono', monospace;
-            height: 100vh;
-            width: 100vw;
             overflow: hidden;
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            text-align: center;
-            user-select: none;
-            cursor: none;
         }
 
-        /* 1. CRT & GLITCH LAYERS */
+        /* --- CRT & NOISE EFFECTS --- */
         .scanlines {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: repeating-linear-gradient(to bottom,
-                    rgba(0, 0, 0, 0),
-                    rgba(0, 0, 0, 0) 50%,
-                    rgba(0, 20, 0, 0.2) 50%,
-                    rgba(0, 20, 0, 0.2) 100%);
-            background-size: 100% 4px;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%),
+                linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 1000;
+            background-size: 100% 3px, 3px 100%;
             pointer-events: none;
-            z-index: 95;
-            animation: scanlineMove 20s linear infinite;
         }
 
-        .crt-flicker {
+        @keyframes scan {
+            from {
+                top: -100px;
+            }
+
+            to {
+                top: 100%;
+            }
+        }
+
+        .scan-anim {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background: rgba(0, 255, 0, 0.05);
+            animation: scan 5s linear infinite;
+            z-index: 1001;
+            pointer-events: none;
+        }
+
+        /* --- MAIN UI CONTAINERS --- */
+        #start-screen,
+        #end-screen {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 255, 0, 0.02);
-            pointer-events: none;
-            z-index: 96;
-            animation: flicker 0.15s infinite;
+            background: #000;
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            transition: opacity 1.5s ease;
+        }
+
+        #end-screen {
+            display: none;
+            overflow-y: auto;
+            justify-content: flex-start;
+            padding-top: 60px;
+        }
+
+        /* --- TYPOGRAPHY --- */
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 4px;
+        }
+
+        .glitch-text {
+            text-shadow: 2px 0 #f00, -2px 0 #0f0;
+        }
+
+        /* --- PREMIUM BUTTON --- */
+        .challenge-btn {
+            background: var(--dark-glass);
+            color: #fff;
+            border: 1px solid var(--horror-red);
+            padding: 20px 60px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 24px;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1010;
+            margin-top: 30px;
+            backdrop-filter: blur(10px);
+            position: relative;
+            overflow: hidden;
+            width: 100%;
+            max-width: 450px;
+            cursor: pointer;
+        }
+
+        .challenge-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 40px var(--horror-red);
+            background: var(--horror-red);
+            color: #000;
+        }
+
+        /* --- WEBCAM & GALLERY --- */
+        #cam-frame {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 180px;
+            height: 250px;
+            border: 2px solid var(--cyber-green);
+            z-index: 40;
+            opacity: 0;
+            transition: opacity 1s;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.2);
+        }
+
+        #webcam {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: grayscale(100%) contrast(150%);
+            transform: scaleX(-1);
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 20px;
+        }
+
+        .gallery-item {
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s, border-color 0.3s;
+            filter: brightness(0.8) sepia(0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .gallery-item:hover {
+            transform: scale(1.05);
+            z-index: 10;
+            border-color: #f00;
+            filter: brightness(1) sepia(0);
+        }
+
+        /* --- ANIMATIONS --- */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.02);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes flicker {
+
+            0%,
+            19.999%,
+            22%,
+            62.999%,
+            64%,
+            64.999%,
+            70%,
+            100% {
+                opacity: 1;
+            }
+
+            20%,
+            21.999%,
+            63%,
+            63.999%,
+            65%,
+            69.999% {
+                opacity: 0.4;
+            }
+        }
+
+        .violent-shake {
+            animation: shake 0.1s infinite;
+        }
+
+        @keyframes shake {
+            0% {
+                transform: translate(2px, 2px);
+            }
+
+            50% {
+                transform: translate(-2px, -2px);
+            }
+
+            100% {
+                transform: translate(2px, -2px);
+            }
+        }
+
+        #text-area {
+            padding: 40px;
+            text-align: center;
+        }
+
+        .highlight {
+            font-size: 80px;
+            color: var(--horror-red);
+            font-family: 'Creepster';
+            text-shadow: var(--neon-glow);
+            margin: 30px 0;
+        }
+
+        .text-word {
+            font-size: 40px;
+            margin: 0 10px;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+
+        #container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 5;
+        }
+
+        #snapshot-canvas {
+            display: none;
         }
 
         .flash-layer {
@@ -69,11 +281,23 @@
             height: 100%;
             background: #fff;
             opacity: 0;
+            z-index: 100;
             pointer-events: none;
-            z-index: 200;
+            transition: opacity 0.1s;
         }
 
-        /* LOCKDOWN OVERLAY */
+        #ghost-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://www.transparenttextures.com/patterns/dark-matter.png');
+            opacity: 0;
+            pointer-events: none;
+            z-index: 45;
+        }
+
         #lockdown-overlay {
             position: fixed;
             top: 0;
@@ -82,29 +306,16 @@
             height: 100%;
             background: #f00;
             color: #000;
-            z-index: 1000;
+            z-index: 2000;
             display: none;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 30px;
-            font-family: 'Orbitron', sans-serif;
             text-align: center;
+            font-family: 'Orbitron';
+            padding: 30px;
         }
 
-        #lockdown-overlay h2 {
-            font-size: 32px;
-            margin-bottom: 20px;
-            font-weight: 900;
-        }
-
-        #lockdown-overlay p {
-            font-size: 18px;
-            line-height: 1.5;
-            font-weight: bold;
-        }
-
-        /* FAKE POPUPS */
         .fake-popup {
             position: fixed;
             top: 20px;
@@ -119,209 +330,33 @@
             border: 2px solid #fff;
             box-shadow: 0 0 20px #f00;
             display: none;
-            animation: shake 0.2s infinite;
-        }
-
-        @keyframes shake {
-            0% {
-                transform: translate(-50%, 0);
-            }
-
-            50% {
-                transform: translate(-52%, 2px);
-            }
-
-            100% {
-                transform: translate(-50%, 0);
-            }
-        }
-
-        /* MAIN CONTENT */
-        #container {
-            z-index: 20;
-            max-width: 900px;
-            padding: 20px;
-            position: relative;
-            transform: translateY(-50px);
-        }
-
-        .text-word {
-            display: inline-block;
-            font-size: 28px;
-            margin: 0 8px;
-            color: #cfc;
-            text-shadow: 0 0 8px #0f0;
-        }
-
-        .highlight {
-            color: #f00;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 45px;
-            text-shadow: 2px 2px 0px #0f0, -2px -2px 0px #00f;
-            display: block;
-            margin: 30px 0;
-            line-height: 1.2;
-            letter-spacing: 3px;
-        }
-
-        /* HUD & CAMERA (ORIGINAL LAYOUT) */
-        #cam-frame {
-            position: fixed;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 200px;
-            height: 200px;
-            z-index: 50;
-            opacity: 0;
-            transition: opacity 1s;
-        }
-
-        #webcam {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
-            border: 2px solid #0f0;
-            box-shadow: 0 0 20px #0f0, inset 0 0 20px #0f0;
-            filter: grayscale(100%) contrast(120%) brightness(0.8) sepia(1) hue-rotate(90deg) url(#melt-filter);
-            transform: scaleX(-1);
-        }
-
-        /* GHOST EFFECT */
-        #ghost-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url('https://www.transparenttextures.com/patterns/dark-matter.png');
-            opacity: 0;
-            pointer-events: none;
-            z-index: 51;
-            transition: opacity 2s;
-            mix-blend-mode: color-dodge;
-        }
-
-        .hud-overlay {
-            position: absolute;
-            top: -10%;
-            left: -10%;
-            width: 120%;
-            height: 120%;
-            pointer-events: none;
-            animation: rotateHUD 10s linear infinite;
-        }
-
-        /* END SCREEN / WALL OF SHAME */
-        #end-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #000;
-            z-index: 150;
-            display: none;
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: center;
-            padding: 50px 20px;
-            overflow-y: auto;
-        }
-
-        .gallery-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            max-width: 800px;
-            margin: 20px 0;
-        }
-
-        .gallery-item {
-            width: 100%;
-            aspect-ratio: 2/3;
-            border: 1px solid #0f0;
-            background: #111;
-            object-fit: cover;
         }
 
         @media (max-width: 600px) {
-            .gallery-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-            .text-word {
-                font-size: 20px;
+            h1 {
+                font-size: 24px;
             }
 
             .highlight {
-                font-size: 28px;
+                font-size: 45px;
+            }
+
+            .text-word {
+                font-size: 25px;
+            }
+
+            .challenge-btn {
+                font-size: 18px;
+                padding: 15px 30px;
+                margin-top: 20px;
             }
 
             #cam-frame {
-                width: 150px;
-                height: 150px;
-                bottom: 15px;
+                width: 120px;
+                height: 180px;
+                bottom: 10px;
+                right: 10px;
             }
-
-            h1 {
-                font-size: 24px !important;
-            }
-        }
-
-        #start-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: radial-gradient(circle, #050505 0%, #000 100%);
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            border: 4px solid #0f0;
-            box-shadow: inset 0 0 100px #000;
-        }
-
-        .breach-text {
-            color: #f00;
-            font-family: 'Orbitron', sans-serif;
-            font-size: 12px;
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            animation: flicker 0.1s infinite;
-        }
-
-        .challenge-btn {
-            background: #f00;
-            border: none;
-            color: #fff;
-            padding: 25px 50px;
-            font-size: 24px;
-            cursor: pointer;
-            font-family: 'Orbitron', sans-serif;
-            text-transform: uppercase;
-            box-shadow: 0 0 20px #f00;
-            letter-spacing: 4px;
-            margin-top: 30px;
-            font-weight: 900;
-            transition: 0.3s;
-        }
-
-        .challenge-btn:hover {
-            background: #fff;
-            color: #f00;
-            box-shadow: 0 0 50px #fff;
-            transform: scale(1.1);
-        }
-
-        #snapshot-canvas {
-            display: none;
         }
     </style>
 </head>
@@ -338,105 +373,93 @@
     </svg>
 
     <div id="lockdown-overlay">
-        <h2>CHALLENGE_BREACHED</h2>
-        <p>Kahan bhag raha hai? Connection toda toh system permanent delete ho jayega.<br>Reality abhi baki hai.</p>
+        <h2 style="font-size: 32px; margin-bottom: 20px; font-weight: 900;">CHALLENGE_BREACHED</h2>
+        <p style="font-size: 18px; line-height: 1.5; font-weight: bold;">Kahan bhag raha hai? Connection toda toh system
+            permanent delete ho jayega.<br>Reality abhi baki hai.</p>
         <button class="challenge-btn" style="margin-top:30px; border-color:#fff; color:#fff;"
             onclick="dismissLockdown()">RESTORE NEURAL LINK</button>
     </div>
 
     <div id="fake-popup" class="fake-popup">WARNING: NEURAL LINK BREACHED</div>
 
-    <!-- LAYERS -->
     <div class="scanlines"></div>
-    <div class="crt-flicker"></div>
+    <div class="scan-anim"></div>
     <div class="flash-layer" id="flash"></div>
 
     <div id="cam-frame">
         <video id="webcam" autoplay playsinline muted></video>
         <div id="ghost-overlay"></div>
-        <svg class="hud-overlay" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="48" stroke="#0f0" stroke-width="0.5" fill="none" stroke-dasharray="10 5" />
-            <circle cx="50" cy="50" r="40" stroke="#0f0" stroke-width="0.2" fill="none" />
-            <path d="M50,5 L50,15 M50,95 L50,85 M5,50 L15,50 M95,50 L85,50" stroke="#0f0" stroke-width="1" />
-        </svg>
     </div>
 
-    <canvas id="snapshot-canvas"></canvas>
-
     <div id="start-screen">
-        <h1
-            style="color:#0f0; font-family:'Orbitron'; font-size:32px; text-shadow:0 0 20px #0f0; margin-bottom:15px; text-transform: uppercase;">
-            THE_REALITY: 60s TRUTH CHALLENGE</h1>
-        <p style="color:#0f0; font-family:'Share Tech Mono'; line-height: 1.6; max-width: 500px; font-size: 20px;">
-            60 Seconds Truth Challenge:<br>
-            Kya aap bina flinch kare 60s tak khud ko dekh sakte ho?<br>
-            <br>
-            <span style="font-size: 14px; opacity: 0.7;">
-                RULES:<br>
-                1. DO NOT FLINCH.<br>
-                2. DO NOT EXIT FULLSCREEN.<br>
-                3. YOUR SOUL IS BEING ARCHIVED.
-            </span>
-        </p>
+        <h1 class="glitch-text" style="font-size: clamp(32px, 8vw, 60px); color: var(--cyber-green);">
+            MORAXE_TRUTH_CHALLENGE</h1>
+
+        <div
+            style="margin: 40px 0; border: 1px solid var(--cyber-green); padding: 30px; background: rgba(0,255,0,0.05); max-width: 600px; text-align: left;">
+            <p style="color: var(--cyber-green); font-size: 20px; line-height: 1.6;">
+                Kya aap bina palkein jhapkaye 60 seconds tak apni asliyat dekh sakte ho?
+            </p>
+            <div style="margin-top: 25px; border-top: 1px solid rgba(0,255,0,0.2); padding-top: 20px;">
+                <p style="opacity: 0.6; font-size: 12px; letter-spacing: 2px;">PROTOCOL:</p>
+                <p style="font-size: 14px; margin: 5px 0;">1. DO NOT FLINCH / NO EYE BLINK</p>
+                <p style="font-size: 14px; margin: 5px 0;">2. MUST ENABLE CAMERA FEED</p>
+                <p style="font-size: 14px; margin: 5px 0;">3. SYSTEM WILL ARCHIVE YOUR SINS</p>
+            </div>
+        </div>
+
         <button class="challenge-btn" id="start-btn">ACCEPT CHALLENGE</button>
-        <p style="color:#0f0; font-size: 14px; margin-top: 20px; opacity: 0.5; font-family: 'Share Tech Mono';">
-            MORAXE.IN</p>
+        <div style="margin-top: 20px; opacity: 0.3; font-size: 12px; letter-spacing: 5px;">WWW.MORAXE.IN</div>
     </div>
 
     <div id="end-screen">
-        <h1 style="color:#f00; font-family:'Orbitron'; font-size:40px; text-shadow:0 0 20px #f00;">WALL_OF_SHAME</h1>
+        <h1 class="glitch-text" style="color:#f00; font-size:45px; text-shadow: var(--neon-glow);">WALL_OF_SHAME</h1>
 
         <div
-            style="background: rgba(255,0,0,0.2); border: 2px solid #f00; padding: 25px; margin: 20px 0; max-width: 700px; width: 95%; box-shadow: 0 0 30px rgba(255,0,0,0.3); text-align: left;">
-            <p style="color:#f00; font-weight: 900; margin-bottom: 15px; font-size: 18px; font-family: 'Orbitron';">
+            style="background: rgba(255,0,0,0.2); border: 2px solid #f00; padding: 30px; margin: 30px 0; max-width: 750px; width: 95%; box-shadow: 0 0 50px rgba(255,0,0,0.2); text-align: left;">
+            <p
+                style="color:#f00; font-weight: 900; margin-bottom: 20px; font-size: 22px; font-family: 'Orbitron'; letter-spacing: 2px;">
                 FINAL_COMMANDS:</p>
 
             <p
-                style="color:#fff; font-size: 18px; font-family: 'Share Tech Mono'; margin-bottom: 12px; line-height: 1.4;">
+                style="color:#fff; font-size: 20px; font-family: 'Share Tech Mono'; margin-bottom: 15px; line-height: 1.5;">
                 1. Apni gallery me ye 6 gunah (sins) dekho. Ye tumhara asli chehra hai.
             </p>
             <p
-                style="color:#fff; font-size: 18px; font-family: 'Share Tech Mono'; margin-bottom: 12px; line-height: 1.4;">
+                style="color:#fff; font-size: 20px; font-family: 'Share Tech Mono'; margin-bottom: 15px; line-height: 1.5;">
                 2. Inhe social media par upload karo aur <span
-                    style="color:#0f0; text-shadow: 0 0 10px #0f0;">MORAXE.IN</span> ko tag karo. Duniya ko sach dikhao.
+                    style="color:var(--cyber-green); font-weight: bold;">@MORAXE.IN</span> ko tag karo.
             </p>
             <p
-                style="color:#fff; font-size: 18px; font-family: 'Share Tech Mono'; margin-bottom: 20px; line-height: 1.4;">
+                style="color:#fff; font-size: 20px; font-family: 'Share Tech Mono'; margin-bottom: 30px; line-height: 1.5;">
                 3. Aaj se social media se gayab ho jao. **PERMANENT LOGOUT.** Reality se bhago mat.
             </p>
 
-            <div style="border-top: 1px solid #f00; padding-top: 15px; text-align: center;">
+            <div style="border-top: 1px solid #f00; padding-top: 20px; text-align: center;">
                 <p
-                    style="color:#f00; font-size: 22px; font-family: 'Orbitron'; line-height: 1.2; font-weight: 900; animation: flicker 0.1s infinite;">
+                    style="color:#f00; font-size: 24px; font-family: 'Orbitron'; line-height: 1.2; font-weight: 900; animation: flicker 0.1s infinite;">
                     LOGOUT IMMEDIATELY. REALITY IS WAITING.
                 </p>
             </div>
         </div>
 
-        <div class="gallery-grid" id="gallery-grid"></div>
-
         <div id="share-container"
-            style="display: none; margin: 20px 0; width: 100%; max-width: 450px; text-align: center;">
+            style="display: none; margin-bottom: 30px; width: 100%; max-width: 450px; text-align: center;">
             <button class="challenge-btn" onclick="shareAllPhotos()"
-                style="background: #f00; border-color: #f00; width: 100%; font-size: 20px; box-shadow: 0 0 40px rgba(255,0,0,0.5); animation: pulse 1s infinite; cursor: pointer;">
+                style="background: #f00; border-color: #fff; width: 100%; animation: pulse 1s infinite;">
                 SAVE 6 SINS TO PHOTOS
             </button>
-            <p
-                style="color: #fff; font-size: 14px; margin-top: 10px; font-family: 'Share Tech Mono'; opacity: 0.8; line-height: 1.4;">
-                (iPhone Users: Tap button, then select "Save 6 Images")
-            </p>
         </div>
 
-        <!-- RETRY DISABLED: NO SECOND CHANCES IN REALITY -->
+        <div class="gallery-grid" id="gallery-grid"></div>
 
-        <div
-            style="margin-top: 50px; border-top: 1px solid rgba(0,255,0,0.2); padding-top: 20px; width: 100%; max-width: 450px; text-align: center; margin-bottom: 50px;">
-            <p style="color:#0f0; font-size: 16px; opacity: 0.9; font-family: 'Share Tech Mono';">
+        <div style="margin-top: 100px; padding-bottom: 50px; width: 100%; max-width: 500px; text-align: center;">
+            <p style="color:var(--cyber-green); font-size: 16px; opacity: 0.8;">
                 CURATED BY <a href="https://instagram.com/mohitrawat.me" target="_blank"
-                    style="color: #fff; text-decoration: none; border-bottom: 1px dashed #0f0; font-weight: bold;">MOHITRAWAT.ME</a>
+                    style="color: #fff; text-decoration: none; border-bottom: 1px dashed var(--cyber-green); font-weight: bold;">MOHITRAWAT.ME</a>
             </p>
-            <p style="color:#0f0; font-size: 11px; margin-top: 10px; opacity: 0.5; letter-spacing: 2px;">MORAXE.IN |
-                ARCHIVING THE FALLEN</p>
+            <p style="color:var(--cyber-green); font-size: 10px; margin-top: 15px; opacity: 0.4; letter-spacing: 5px;">
+                MORAXE.IN | ARCHIVING THE FALLEN</p>
         </div>
     </div>
 
@@ -484,43 +507,34 @@
         window.onbeforeunload = () => "Challenge in progress. Reality is watching.";
 
         startBtn.addEventListener('click', () => {
-            // Unlock Voice Narration (Big Boss Mode)
+            // Unlock Voice Narration
             speakHorror(" ");
 
             // ROBUST MOBILE CAMERA REQUEST
             const constraints = {
-                video: {
-                    facingMode: 'user',
-                    width: { ideal: 720 },
-                    height: { ideal: 1280 }
-                },
+                video: { facingMode: 'user' },
                 audio: false
             };
+
+            // Start exp immediately to avoid Safari stalls, camera loads in bg
+            startExperience();
 
             navigator.mediaDevices.getUserMedia(constraints)
                 .then(stream => {
                     webcam.srcObject = stream;
-                    webcam.onloadedmetadata = () => {
-                        webcam.play().catch(e => console.error("Auto-play failed:", e));
-                        camFrame.style.opacity = 1;
-                        startExperience();
-                    };
+                    webcam.play().catch(e => console.error("Webcam play failed", e));
+                    camFrame.style.opacity = 1;
                 })
                 .catch(err => {
                     console.error("Camera Error:", err);
                     let errMsg = "CHALLENGE REQUIRES VISUAL FEED.";
-                    if (err.name === 'NotAllowedError') errMsg = "CAMERA PERMISSION DENIED. RESET PERMISSIONS TO PROCEED.";
-                    if (err.name === 'NotFoundError') errMsg = "NO CAMERA DETECTED.";
+                    if (err.name === 'NotAllowedError') errMsg = "CAMERA PERMISSION DENIED.";
 
-                    // Detect if in Instagram/Facebook/WhatsApp WebView
                     const ua = navigator.userAgent || navigator.vendor || window.opera;
-                    if ((ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1) || (ua.indexOf("Instagram") > -1) || (ua.indexOf("WhatsApp") > -1)) {
-                        errMsg += "\n\nTIP: Ise Chrome ya Safari me open karein (In-app browsers block camera).";
+                    if (/Instagram|FBAN|FBAV|WhatsApp/i.test(ua)) {
+                        errMsg += "\n\nTIP: Open in Chrome/Safari (In-app browsers block camera).";
                     }
-
                     alert(errMsg);
-                    // Pro-active fallback: attempt start anyway for testing, but mostly we want permission
-                    startExperience();
                 });
         });
 
