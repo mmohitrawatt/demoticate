@@ -687,26 +687,26 @@
         }
 
         const script = [
-            { t: "Kahan bhag rahe ho sach se?", d: 4500, tempo: 60 },
-            { t: "Aaj raat nind nahi aayegi. Ye chehra yaad rahega.", d: 4000, tempo: 70 },
-            { t: "Maa-baap ko lagta hai tu unka sahara banega.", d: 4500, tempo: 80 },
-            { big: "PUSTAINI FAILURE", d: 5500, shake: true, tempo: 100 },
-            { t: "Par tu bas unki ummedon ka qatil hai.", d: 4500 },
-            { t: "Wo teri safalta ka intezar kar rahe hain.", d: 3500 },
-            { t: "Aur tu unhe bas ek lachar budhapa de raha hai.", d: 4000 },
-            { big: "GATAR KI ZINDAGI", d: 5500, shake: true, tempo: 120 },
-            { t: "Tere doston ki naukri lag gayi. Wo aage nikal gaye.", d: 5000 },
-            { t: "Tu unki photos like karega. Aur room me andhera.", d: 4500 },
-            { t: "Duniya tujhe bhool jayegi. Jaise tu tha hi nahi.", d: 3500 },
-            { t: "Bas ek bojh. Bas ek galti.", d: 5000 },
-            { big: "SAMAJH LE TU KHATAM HAI", d: 5500, shake: true, tempo: 140 },
-            { t: "Agle 5 saal baad bhi tu yahin hoga. Khali hath.", d: 4500 },
-            { t: "Sab khatam ho raha hai. Aur tu bas dekh raha hai.", d: 4000 },
-            { t: "Teri kismat me sirf rejection hai.", d: 4500 },
-            { big: "BINA KAAM KA KACHRA", d: 6000, shake: true, tempo: 160 },
-            { t: "Dar lag raha hai na future se?", d: 4500 },
-            { big: "THE END IS HERE", d: 3500, tempo: 180 },
-            { t: "Check your sins. Subject.", d: 5000 },
+            { t: "Kahan bhag rahe ho sach se?", p: "Kahaan bhaag rahay ho satch say?", d: 4500, tempo: 60 },
+            { t: "Aaj raat nind nahi aayegi. Ye chehra yaad rahega.", p: "Aaj raat neend nahi aayay-gee. Yeh chehra yaad rahay-gaa.", d: 4000, tempo: 70 },
+            { t: "Maa-baap ko lagta hai tu unka sahara banega.", p: "Maa-baap ko lagta hai too unn-ka sahaara banay-gaa.", d: 4500, tempo: 80 },
+            { big: "PUSTAINI FAILURE", p: "Poosthaini failure", d: 5500, shake: true, tempo: 100 },
+            { t: "Par tu bas unki ummedon ka qatil hai.", p: "Par too bas unn-kee ummeedon ka qaatil hai.", d: 4500 },
+            { t: "Wo teri safalta ka intezar kar rahe hain.", p: "Woh tay-ree safaltaa ka intay-zaar kar rahay hain.", d: 3500 },
+            { t: "Aur tu unhe bas ek lachar budhapa de raha hai.", p: "Aur too un-hay bas ek lachaar boodhaapa day rahaa hai.", d: 4000 },
+            { big: "GATAR KI ZINDAGI", p: "Guth-tarr kee zindagee", d: 5500, shake: true, tempo: 120 },
+            { t: "Tere doston ki naukri lag gayi. Wo aage nikal gaye.", p: "Tay-ray doston kee naukree lagg gayee. Woh aagay nikal gayay.", d: 5000 },
+            { t: "Tu unki photos like karega. Aur room me andhera.", p: "Too unn-kee photos like karay-gaa. Aur room may andhay-ra.", d: 4500 },
+            { t: "Duniya tujhe bhool jayegi. Jaise tu tha hi nahi.", p: "Duniya tujhay bhool jaayay-gee. Jaisay too thaa hee na-hee.", d: 3500 },
+            { t: "Bas ek bojh. Bas ek galti.", p: "Bas ek bojh. Bas ek gal-tee.", d: 5000 },
+            { big: "SAMAJH LE TU KHATAM HAI", p: "Samajh lay too khatam hai", d: 5500, shake: true, tempo: 140 },
+            { t: "Agle 5 saal baad bhi tu yahin hoga. Khali hath.", p: "Aglay paanch saal baad bhee too ya-heen ho-gaa. Khaaleeh haath.", d: 4500 },
+            { t: "Sab khatam ho raha hai. Aur tu bas dekh raha hai.", p: "Sub khatam ho raha hai. Aur too bas daykh rahaa hai.", d: 4000 },
+            { t: "Teri kismat me sirf rejection hai.", p: "Tay-ree kismat may sirf rejection haii.", d: 4500 },
+            { big: "BINA KAAM KA KACHRA", p: "Binaa kaam kaa kach-ra", d: 6000, shake: true, tempo: 160 },
+            { t: "Dar lag raha hai na future se?", p: "Darr lagg rahaa hai na future say?", d: 4500 },
+            { big: "THE END IS HERE", p: "The end is year", d: 3500, tempo: 180 },
+            { t: "Check your sins. Subject.", p: "Check your sins. Subject.", d: 5000 },
         ];
 
         let availableVoices = [];
@@ -717,30 +717,43 @@
             window.speechSynthesis.onvoiceschanged = loadVoices;
         }
 
-        function speakHorror(text) {
+        function speakHorror(text, phoneticText) {
             if (!window.speechSynthesis) return;
             window.speechSynthesis.cancel();
 
-            const msg = new SpeechSynthesisUtterance(text);
+            // Mobile devices often have "Lekha", "Rishi", "Google Hindi"
             if (availableVoices.length === 0) loadVoices();
 
-            // Prioritize Hindi voices for Hinglish text to prevent spelling out words
-            const preferredVoice = availableVoices.find(v => v.lang.includes('hi-IN'))
-                || availableVoices.find(v => v.lang.includes('en') && (v.name.includes('David') || v.name.includes('Standard-B') || v.name.includes('Natural')))
-                || availableVoices.find(v => v.name.includes('Male'))
+            const targetText = phoneticText || text;
+            const msg = new SpeechSynthesisUtterance(targetText);
+
+            // Comprehensive search for a deep/authoritative voice
+            const preferredVoice =
+                // 1. Specific Mobile Hindi Voices
+                availableVoices.find(v => v.lang.includes('hi') && (v.name.includes('Rishi') || v.name.includes('Lekha') || v.name.includes('Google')))
+                || availableVoices.find(v => v.lang.includes('hi'))
+                // 2. High Quality English Deep Voices
+                || availableVoices.find(v => v.name.includes('Natural') && v.lang.includes('en'))
+                || availableVoices.find(v => v.name.includes('Standard-B') && v.lang.includes('en'))
+                || availableVoices.find(v => v.name.includes('Male') && v.lang.includes('en'))
                 || availableVoices[0];
 
             msg.voice = preferredVoice;
-            msg.pitch = 0.8; // Deep but clear enough to avoid "spelling mode"
-            msg.rate = 0.8;  // Deliberate pacing
+            msg.pitch = 0.7; // Slightly deeper
+            msg.rate = 0.85; // Slightly faster than before for better rhythm
             msg.volume = 1;
 
-            // Set lang to hi-IN if a Hindi voice is found, else en-US
-            msg.lang = preferredVoice.lang.includes('hi-IN') ? 'hi-IN' : 'en-US';
+            // Critical: If it's a Hindi voice, force hi-IN lang to ensure phonetic parsing
+            if (preferredVoice && preferredVoice.lang.includes('hi')) {
+                msg.lang = 'hi-IN';
+            } else {
+                msg.lang = 'en-US';
+            }
 
+            // iOS Fix: Speech synthesis needs a tiny delay to reset properly
             setTimeout(() => {
-                if (window.speechSynthesis) window.speechSynthesis.speak(msg);
-            }, 60);
+                window.speechSynthesis.speak(msg);
+            }, 50);
         }
 
         async function startCountdown() {
@@ -756,7 +769,8 @@
                 if (item.tempo) heartbeatTempo = item.tempo;
                 textArea.innerHTML = "";
                 const currentText = item.big || item.t;
-                speakHorror(currentText);
+                const speakText = item.p || currentText;
+                speakHorror(currentText, speakText);
 
                 if (item.big) {
                     triggerGlitchSound();
